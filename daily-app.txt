@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Daily - 나만의 일일 앱</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts (Noto Serif KR: 묵직하고 정갈한 아우라 폰트 / Noto Sans KR: 가독성 보조 폰트) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- 
+      [🎨 사용자 직접 디자인 수정 가이드]
+      - 전체 배경색 바꾸기: body의 background-color (#0f172a 다크슬레이트, #18181b 딥차콜 등)
+      - 글꼴 바꾸기: font-serif (묵직한 서체), font-sans (깔끔한 고딕체)
+    -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0f172a; /* 👈 배경색 수정 가능 (현재: 딥 앤 다크 슬레이트) */
+            color: #e2e8f0;            /* 👈 기본 글자색 (밝은 회색) */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-aura {
+            font-family: 'Noto Serif KR', serif; /* 묵직하고 인상적인 분위기의 폰트 */
+        }
+        /* 스크롤바 디자인 */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 pb-20 max-w-md mx-auto min-h-screen relative shadow-2xl border-x border-slate-800">
+
+    <!-- Header Section (상단 헤더 영역) -->
+    <header class="bg-slate-950/80 backdrop-blur-md p-6 border-b border-slate-800 text-slate-200 sticky top-0 z-20">
+        <div class="flex justify-between items-center">
+            <div>
+                <span id="current-date-text" class="text-xs font-mono tracking-widest text-slate-400 uppercase">2026. 00. 00 (MON)</span>
+                <!-- 👈 헤더 타이틀 문구 및 폰트 크기 변경 가능 -->
+                <h1 class="text-xl font-bold font-aura mt-1 text-slate-100 tracking-wider">DAILY JOURNAL & FORTUNE</h1>
+            </div>
+            <button onclick="togglePwaModal()" class="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg transition text-slate-300 border border-slate-700">
+                <i data-lucide="smartphone" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="p-4 space-y-5">
+
+        <!-- TAB 1: 운세 & 명언 (홈) -->
+        <div id="tab-home" class="space-y-5">
+            
+            <!-- 1. 오늘의 명언 & 사자성어 카드 -->
+            <section class="bg-slate-800/60 backdrop-blur-md p-5 rounded-xl border border-slate-700/80 shadow-lg space-y-4">
+                <div class="flex justify-between items-center">
+                    <!-- 👈 요청하신 명언/사자성어 카드 상단 영문 레이블 -->
+                    <div class="flex items-center gap-2 text-slate-400 text-xs font-mono tracking-widest uppercase">
+                        <i data-lucide="quote" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>WORDS OF WISDOM</span>
+                    </div>
+                    <button onclick="refreshQuote()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition font-mono">
+                        <i data-lucide="rotate-cw" class="w-3 h-3"></i> REFRESH
+                    </button>
+                </div>
+                
+                <!-- 명언 내용 -->
+                <div id="quote-container" class="p-4 bg-slate-900/60 rounded-lg border border-slate-700/50">
+                    <p id="quote-text" class="text-sm font-aura font-medium text-slate-200 leading-relaxed italic">"노력은 결코 배신하지 않는다."</p>
+                    <p id="quote-author" class="text-xs font-mono text-slate-400 text-right mt-2">- AUTHOR -</p>
+                </div>
+
+                <!-- 사자성어 내용 -->
+                <div id="idiom-container" class="p-4 bg-slate-900/60 rounded-lg border border-slate-700/50">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span id="idiom-word" class="font-aura font-bold text-slate-100 text-base">일취월장 (日就月將)</span>
+                        <span id="idiom-pron" class="text-xs font-mono text-slate-400">날마다 발전함</span>
+                    </div>
+                    <p id="idiom-meaning" class="text-xs text-slate-300 leading-relaxed">날마다 나아가고 달마다 발전하여 학업이나 실력이 끊임없이 크게 자람.</p>
+                </div>
+            </section>
+
+            <!-- 2. 오하아사 별자리 운세 카드 -->
+            <section class="bg-slate-800/60 backdrop-blur-md p-5 rounded-xl border border-slate-700/80 shadow-lg space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-slate-400 text-xs font-mono tracking-widest uppercase">
+                        <i data-lucide="compass" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>HOROSCOPE RANKING</span>
+                    </div>
+                    <button onclick="openZodiacSelectModal()" class="text-xs bg-slate-700/80 hover:bg-slate-600 text-slate-200 px-3 py-1 rounded-md font-medium transition border border-slate-600">
+                        내 별자리 설정
+                    </button>
+                </div>
+
+                <!-- 내 별자리 요약 박스 -->
+                <div id="my-zodiac-card" class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 rounded-lg border border-slate-600/80 flex items-center justify-between">
+                    <div class="flex items-center gap-3.5">
+                        <div id="my-zodiac-icon" class="text-3xl text-slate-200">♈</div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span id="my-zodiac-name" class="font-aura font-bold text-slate-100 text-sm">양자리</span>
+                                <span id="my-zodiac-rank" class="bg-slate-100 text-slate-900 text-[11px] font-mono px-2 py-0.5 rounded font-bold">1st</span>
+                            </div>
+                            <p id="my-zodiac-desc" class="text-xs text-slate-300 mt-1 line-clamp-1">오늘 당신이 주인공! 자신감 있게 행동해보세요.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 별자리 순위 전체 리스트 -->
+                <div class="space-y-2 max-h-64 overflow-y-auto pr-1" id="zodiac-list">
+                    <!-- Dynamic rendering -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- TAB 2: 일기장 -->
+        <div id="tab-diary" class="space-y-5 hidden">
+            <!-- 일기 작성 카드 -->
+            <section class="bg-slate-800/60 backdrop-blur-md p-5 rounded-xl border border-slate-700/80 shadow-lg space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-slate-400 text-xs font-mono tracking-widest uppercase">
+                        <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>NEW JOURNAL</span>
+                    </div>
+                    <span id="diary-date-display" class="text-xs font-mono text-slate-400">2026. 00. 00</span>
+                </div>
+
+                <!-- 기분 선택 버튼 -->
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-2">TODAY'S MOOD</label>
+                    <div class="flex justify-between gap-2" id="mood-selector">
+                        <button type="button" onclick="selectMood('happy')" class="mood-btn p-2 rounded-lg border text-xl flex-1 bg-slate-900 border-slate-600 transition" data-mood="happy">😊</button>
+                        <button type="button" onclick="selectMood('excited')" class="mood-btn p-2 rounded-lg border text-xl flex-1 bg-slate-900/40 border-slate-700 transition" data-mood="excited">🥳</button>
+                        <button type="button" onclick="selectMood('calm')" class="mood-btn p-2 rounded-lg border text-xl flex-1 bg-slate-900/40 border-slate-700 transition" data-mood="calm">😌</button>
+                        <button type="button" onclick="selectMood('sad')" class="mood-btn p-2 rounded-lg border text-xl flex-1 bg-slate-900/40 border-slate-700 transition" data-mood="sad">😢</button>
+                        <button type="button" onclick="selectMood('angry')" class="mood-btn p-2 rounded-lg border text-xl flex-1 bg-slate-900/40 border-slate-700 transition" data-mood="angry">😡</button>
+                    </div>
+                </div>
+
+                <!-- 일기 텍스트 입력창 -->
+                <div>
+                    <textarea id="diary-input" rows="4" class="w-full p-3.5 text-sm bg-slate-900/80 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-slate-500 resize-none font-sans leading-relaxed" placeholder="오늘 하루는 어땠나요? 차분하게 기록을 남겨보세요..."></textarea>
+                </div>
+
+                <button onclick="saveDiary()" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold text-xs font-mono py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> SAVE JOURNAL
+                </button>
+            </section>
+
+            <!-- 지난 일기 목록 -->
+            <section class="bg-slate-800/60 backdrop-blur-md p-5 rounded-xl border border-slate-700/80 shadow-lg space-y-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-slate-400 text-xs font-mono tracking-widest uppercase">
+                        <i data-lucide="archive" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>PAST LOGS</span>
+                    </div>
+                    <span id="diary-count" class="text-xs font-mono bg-slate-900 text-slate-400 px-2.5 py-0.5 rounded border border-slate-700">0 ENTRIES</span>
+                </div>
+
+                <div id="diary-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                    <!-- Dynamic rendering -->
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (하단 탭 바) -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/90 backdrop-blur-lg border-t border-slate-800 flex justify-around py-3 px-4 shadow-2xl z-30">
+        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center gap-1 text-slate-100">
+            <i data-lucide="compass" class="w-5 h-5"></i>
+            <span class="text-[10px] font-mono tracking-wider">FORTUNE</span>
+        </button>
+        <button onclick="switchTab('diary')" id="nav-diary" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+            <span class="text-[10px] font-mono tracking-wider">JOURNAL</span>
+        </button>
+    </nav>
+
+    <!-- Modal: 내 별자리 선택 모달 -->
+    <div id="zodiac-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 rounded-xl max-w-sm w-full p-5 space-y-4 border border-slate-700 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-aura font-bold text-slate-100 text-base">내 별자리 지정</h3>
+                <button onclick="closeZodiacSelectModal()" class="text-slate-400 hover:text-slate-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">선택하신 별자리는 항상 브라우저에 저장되어 매일 1순위로 표시됩니다.</p>
+            <div class="grid grid-cols-3 gap-2" id="zodiac-options">
+                <!-- Dynamic grid -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: PWA 홈화면 추가 안내 -->
+    <div id="pwa-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 rounded-xl max-w-sm w-full p-6 space-y-4 border border-slate-700 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-aura font-bold text-slate-100 text-base">📱 핸드폰 앱으로 바로 추가하기</h3>
+                <button onclick="togglePwaModal()" class="text-slate-400 hover:text-slate-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-300">
+                <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 space-y-1">
+                    <p class="font-bold text-slate-100">아이폰 (Safari)</p>
+                    <p>1. 하단 중앙의 <b>[공유]</b> 버튼 클릭</p>
+                    <p>2. 목록에서 <b>[홈 화면에 추가]</b> 선택</p>
+                </div>
+                <div class="p-3 bg-slate-800 rounded-lg border border-slate-700 space-y-1">
+                    <p class="font-bold text-slate-100">안드로이드 (Chrome)</p>
+                    <p>1. 우측 상단 <b>[⋮ 메뉴]</b> 클릭</p>
+                    <p>2. <b>[홈 화면에 추가]</b> 선택</p>
+                </div>
+            </div>
+            <button onclick="togglePwaModal()" class="w-full bg-slate-100 text-slate-900 font-bold text-xs py-2.5 rounded-lg">확인</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-slate-100 text-slate-900 font-medium text-xs px-4 py-2 rounded-md shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50">
+        메시지
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // --- DATA DEFS ---
+        const ZODIAC_DATA = [
+            { id: 'aries', name: '양자리', date: '3.21~4.19', icon: '♈' },
+            { id: 'taurus', name: '황소자리', date: '4.20~5.20', icon: '♉' },
+            { id: 'gemini', name: '쌍둥이자리', date: '5.21~6.21', icon: '♊' },
+            { id: 'cancer', name: '게자리', date: '6.22~7.22', icon: '♋' },
+            { id: 'leo', name: '사자자리', date: '7.23~8.22', icon: '♌' },
+            { id: 'virgo', name: '처녀자리', date: '8.23~9.22', icon: '♍' },
+            { id: 'libra', name: '천칭자리', date: '9.23~10.23', icon: '♎' },
+            { id: 'scorpio', name: '전갈자리', date: '10.24~11.22', icon: '♏' },
+            { id: 'sagittarius', name: '사수자리', date: '11.23~12.21', icon: '♐' },
+            { id: 'capricorn', name: '염소자리', date: '12.22~1.19', icon: '♑' },
+            { id: 'aquarius', name: '물병자리', date: '1.20~2.18', icon: '♒' },
+            { id: 'pisces', name: '물고기자리', date: '2.19~3.20', icon: '♓' }
+        ];
+
+        const FORTUNE_DESCS = [
+            "생각지도 못한 반가운 행운이 찾아오는 날입니다.",
+            "주변 사람들과의 소통에서 큰 기쁨을 얻을 수 있어요.",
+            "차분하게 침착함을 유지하면 좋은 성과가 따라옵니다.",
+            "평소 미뤄두었던 일을 처리하기에 완벽한 타이밍입니다.",
+            "소소한 도전을 시도해보세요. 자신감이 급상승합니다.",
+            "조금 쉬어가도 괜찮아요. 자신만의 페이스를 유지하세요.",
+            "새로운 아이디어가 솟구치는 창의적인 하루입니다.",
+            "친구나 귀인의 도움으로 고민거리가 깨끗이 해결돼요.",
+            "오늘의 선택이 앞으로의 좋은 계기가 될 수 있습니다.",
+            "따뜻한 말 한마디로 따뜻한 관계를 이끌어낼 수 있어요."
+        ];
+
+        const LUCKY_COLORS = ["스모크 딥 차콜", "매트 묵직 블랙", "애쉬 슬레이트", "다크 네이비", "딥 버건디", "티타늄 실버", "모노 크롬"];
+        const LUCKY_ITEMS = ["메모 노티스", "만년필", "텀블러", "블랙 키링", "이어폰", "클래식 돋보기", "가죽 파우치"];
+
+        /* 👈 명언 문구를 바꾸고 싶다면 여기 목록을 수정하면 됩니다! */
+        const QUOTES = [
+            { text: "시작하는 방법은 말하기를 그만두고 행동하는 것이다.", author: "월트 디즈니" },
+            { text: "오늘 할 수 있는 일에 전력을 다하라. 그러면 내일은 한 걸음 더 나아갈 수 있다.", author: "아이작 뉴턴" },
+            { text: "작은 실천이 모여 위대한 결과를 만든다.", author: "아리스토텔레스" },
+            { text: "네 꿈을 포기하지 말라. 꿈은 삶의 원동력이다.", author: "헬렌 켈러" },
+            { text: "성공은 매일 반복한 작은 노력들의 합이다.", author: "로버트 콜리어" },
+            { text: "당신이 할 수 있다고 믿든 할 수 없다고 믿든, 믿는 대로 될 것이다.", author: "헨리 포드" },
+            { text: "오늘이라는 날은 다시 오지 않는다.", author: "단테" }
+        ];
+
+        /* 👈 사자성어 문구를 바꾸고 싶다면 여기 목록을 수정하면 됩니다! */
+        const IDIOMS = [
+            { word: "일취월장 (日就月將)", pron: "날마다 발전함", meaning: "날마다 나아가고 달마다 발전하여 실력이 끊임없이 자람." },
+            { word: "대기만성 (大器晚成)", pron: "큰 그릇은 늦게 완성됨", meaning: "큰 인물은 오랜 노력 끝에 성취함을 뜻함." },
+            { word: "고진감래 (苦盡甘來)", pron: "고생 끝에 즐거움이 옴", meaning: "어려운 일을 참아내면 반드시 좋은 일 기쁨이 찾아옴." },
+            { word: "유지경성 (有志竟成)", pron: "뜻이 있으면 이룸", meaning: "의지를 가지고 꾸준히 노력하면 결국 이루어짐." },
+            { word: "마부위침 (磨斧爲針)", pron: "도끼를 갈아 바늘을 만듦", meaning: "아무리 힘든 일도 인내와 노력으로 성취해냄." },
+            { word: "동심협력 (同心協力)", pron: "마음을 합쳐 힘을 모음", meaning: "서로 다른 마음을 하나로 모아 함께 협력함." }
+        ];
+
+        // --- STATE & PERSISTENCE ---
+        let currentSelectedMood = 'happy';
+        
+        // 👈 [중요] 내 별자리를 LocalStorage 'userZodiac' 키로 안전하게 자동 저장/불러오기
+        let myZodiacId = localStorage.getItem('userZodiac') || 'aries';
+        let dailyFortunes = [];
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            lucide.createIcons();
+            initDateDisplay();
+            generateDailyFortunes();
+            renderZodiacList();
+            refreshQuote();
+            renderDiaryList();
+            renderZodiacOptionsModal();
+        };
+
+        function initDateDisplay() {
+            const now = new Date();
+            const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            const dateStr = `${now.getFullYear()}. ${String(now.getMonth() + 1).padStart(2, '0')}. ${String(now.getDate()).padStart(2, '0')} (${days[now.getDay()]})`;
+            
+            document.getElementById('current-date-text').innerText = dateStr;
+            document.getElementById('diary-date-display').innerText = dateStr;
+        }
+
+        function getTodaySeed() {
+            const now = new Date();
+            return now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+        }
+
+        function pseudoRandom(seed) {
+            let x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function generateDailyFortunes() {
+            const seed = getTodaySeed();
+            let indices = Array.from({length: 12}, (_, i) => i);
+            
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(pseudoRandom(seed + i) * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+
+            dailyFortunes = ZODIAC_DATA.map((zodiac, originalIndex) => {
+                const rank = indices.indexOf(originalIndex) + 1;
+                const descIdx = Math.floor(pseudoRandom(seed + rank * 3) * FORTUNE_DESCS.length);
+                const colorIdx = Math.floor(pseudoRandom(seed + rank * 5) * LUCKY_COLORS.length);
+                const itemIdx = Math.floor(pseudoRandom(seed + rank * 7) * LUCKY_ITEMS.length);
+
+                return {
+                    ...zodiac,
+                    rank: rank,
+                    desc: FORTUNE_DESCS[descIdx],
+                    color: LUCKY_COLORS[colorIdx],
+                    item: LUCKY_ITEMS[itemIdx]
+                };
+            });
+
+            dailyFortunes.sort((a, b) => a.rank - b.rank);
+        }
+
+        function renderZodiacList() {
+            const listEl = document.getElementById('zodiac-list');
+            listEl.innerHTML = '';
+
+            const myFortune = dailyFortunes.find(f => f.id === myZodiacId) || dailyFortunes[0];
+
+            document.getElementById('my-zodiac-icon').innerText = myFortune.icon;
+            document.getElementById('my-zodiac-name').innerText = myFortune.name;
+            document.getElementById('my-zodiac-rank').innerText = `${myFortune.rank}위`;
+            document.getElementById('my-zodiac-desc').innerText = myFortune.desc;
+
+            dailyFortunes.forEach(item => {
+                const isMine = item.id === myZodiacId;
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-lg border transition flex items-center justify-between ${
+                    isMine 
+                    ? 'bg-slate-800 border-slate-500 ring-1 ring-slate-400' 
+                    : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 font-mono text-center text-xs ${item.rank <= 3 ? 'text-slate-100 font-bold' : 'text-slate-500'}">${item.rank}위</span>
+                        <span class="text-xl text-slate-300">${item.icon}</span>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-bold text-xs text-slate-200 font-aura">${item.name}</span>
+                                ${isMine ? '<span class="text-[9px] font-mono bg-slate-100 text-slate-900 px-1 py-0.2 rounded font-bold">MY</span>' : ''}
+                            </div>
+                            <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">${item.desc}</p>
+                        </div>
+                    </div>
+                    <div class="text-right pl-2 min-w-fit font-mono">
+                        <div class="text-[10px] text-slate-400">🎨 ${item.color}</div>
+                        <div class="text-[10px] text-slate-400">🍀 ${item.item}</div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        function refreshQuote() {
+            const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            const randomIdiom = IDIOMS[Math.floor(Math.random() * IDIOMS.length)];
+
+            document.getElementById('quote-text').innerText = `"${randomQuote.text}"`;
+            document.getElementById('quote-author').innerText = `- ${randomQuote.author} -`;
+
+            document.getElementById('idiom-word').innerText = randomIdiom.word;
+            document.getElementById('idiom-pron').innerText = randomIdiom.pron;
+            document.getElementById('idiom-meaning').innerText = randomIdiom.meaning;
+            
+            showToast('새 명언과 글귀를 가져왔습니다.');
+        }
+
+        function selectMood(mood) {
+            currentSelectedMood = mood;
+            const buttons = document.querySelectorAll('.mood-btn');
+            buttons.forEach(btn => {
+                if (btn.dataset.mood === mood) {
+                    btn.classList.add('bg-slate-800', 'border-slate-500');
+                    btn.classList.remove('bg-slate-900/40', 'border-slate-700');
+                } else {
+                    btn.classList.remove('bg-slate-800', 'border-slate-500');
+                    btn.classList.add('bg-slate-900/40', 'border-slate-700');
+                }
+            });
+        }
+
+        function getMoodEmoji(mood) {
+            const map = { happy: '😊', excited: '🥳', calm: '😌', sad: '😢', angry: '😡' };
+            return map[mood] || '😊';
+        }
+
+        function saveDiary() {
+            const input = document.getElementById('diary-input');
+            const content = input.value.trim();
+
+            if (!content) {
+                showToast('일기 내용을 입력해주세요.');
+                return;
+            }
+
+            const newDiary = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+                time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+                mood: currentSelectedMood,
+                content: content
+            };
+
+            const diaries = JSON.parse(localStorage.getItem('my_diaries') || '[]');
+            diaries.unshift(newDiary);
+            localStorage.setItem('my_diaries', JSON.stringify(diaries));
+
+            input.value = '';
+            renderDiaryList();
+            showToast('일기가 기록되었습니다.');
+        }
+
+        function deleteDiary(id) {
+            if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+            
+            let diaries = JSON.parse(localStorage.getItem('my_diaries') || '[]');
+            diaries = diaries.filter(d => d.id !== id);
+            localStorage.setItem('my_diaries', JSON.stringify(diaries));
+
+            renderDiaryList();
+            showToast('기록이 삭제되었습니다.');
+        }
+
+        function renderDiaryList() {
+            const diaries = JSON.parse(localStorage.getItem('my_diaries') || '[]');
+            const listEl = document.getElementById('diary-list');
+            document.getElementById('diary-count').innerText = `${diaries.length} ENTRIES`;
+
+            listEl.innerHTML = '';
+
+            if (diaries.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-8 text-slate-500 text-xs font-mono">
+                        NO LOGS YET.
+                    </div>
+                `;
+                return;
+            }
+
+            diaries.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'p-3.5 bg-slate-900/60 rounded-lg border border-slate-700/60 space-y-2 relative';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-mono">
+                        <span class="flex items-center gap-1.5 font-medium text-slate-300">
+                            <span class="text-base">${getMoodEmoji(item.mood)}</span>
+                            <span>${item.date}</span>
+                            <span class="text-[10px] text-slate-500">(${item.time})</span>
+                        </span>
+                        <button onclick="deleteDiary(${item.id})" class="text-slate-500 hover:text-slate-300 p-1 transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-300 font-sans leading-relaxed whitespace-pre-wrap">${escapeHtml(item.content)}</p>
+                `;
+                listEl.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;")
+                       .replace(/</g, "&lt;")
+                       .replace(/>/g, "&gt;")
+                       .replace(/"/g, "&quot;")
+                       .replace(/'/g, "&#039;");
+        }
+
+        function switchTab(tab) {
+            const homeTab = document.getElementById('tab-home');
+            const diaryTab = document.getElementById('tab-diary');
+            const navHome = document.getElementById('nav-home');
+            const navDiary = document.getElementById('nav-diary');
+
+            if (tab === 'home') {
+                homeTab.classList.remove('hidden');
+                diaryTab.classList.add('hidden');
+                navHome.className = "flex flex-col items-center gap-1 text-slate-100";
+                navDiary.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300";
+            } else {
+                homeTab.classList.add('hidden');
+                diaryTab.classList.remove('hidden');
+                navHome.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300";
+                navDiary.className = "flex flex-col items-center gap-1 text-slate-100";
+            }
+        }
+
+        function openZodiacSelectModal() {
+            document.getElementById('zodiac-modal').classList.remove('hidden');
+        }
+
+        function closeZodiacSelectModal() {
+            document.getElementById('zodiac-modal').classList.add('hidden');
+        }
+
+        function renderZodiacOptionsModal() {
+            const grid = document.getElementById('zodiac-options');
+            grid.innerHTML = '';
+
+            ZODIAC_DATA.forEach(z => {
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-lg border flex flex-col items-center gap-1 transition ${
+                    z.id === myZodiacId ? 'bg-slate-800 border-slate-400 font-bold' : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                }`;
+                btn.onclick = () => {
+                    myZodiacId = z.id;
+                    // 👈 사용자가 선택한 별자리를 영구 저장하는 핵심 코드!
+                    localStorage.setItem('userZodiac', z.id);
+                    renderZodiacList();
+                    renderZodiacOptionsModal();
+                    closeZodiacSelectModal();
+                    showToast(`${z.name}로 별자리가 항상 저장되었습니다.`);
+                };
+                btn.innerHTML = `
+                    <span class="text-xl text-slate-200">${z.icon}</span>
+                    <span class="text-xs text-slate-300 font-aura">${z.name}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function togglePwaModal() {
+            document.getElementById('pwa-modal').classList.toggle('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
